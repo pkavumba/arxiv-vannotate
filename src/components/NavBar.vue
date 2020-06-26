@@ -71,23 +71,13 @@
       <v-toolbar-title style="width: 300px" class="ml-0 pl-4">
         <span class="hidden-sm-and-down">arXiv-Vannotate</span>
       </v-toolbar-title>
-      <v-text-field
-        flat
-        solo-inverted
-        hide-details
-        v-model="arxivId"
-        prepend-inner-icon="mdi-magnify"
-        label="Search"
-        class="hidden-sm-and-down"
-        placeholder="Search using arXiv id. For example 1907.1169"
-        @keyup.enter.native="convert"
-      />
+      <search-bar></search-bar>
       <v-spacer />
-      <v-list class="text-primary mr-10" :dark="false" id="darkTheme">
+      <v-list class="text-primary mr-sm-10" id="darkTheme">
         <v-list-item>
           <v-list-item-title>Dark Mode</v-list-item-title>
-          <v-list-item-action>
-            <v-switch v-model="darkMode"></v-switch>
+          <v-list-item-action id="darkSwitch">
+            <v-switch v-model="darkMode" color="white"></v-switch>
           </v-list-item-action>
         </v-list-item>
       </v-list>
@@ -128,11 +118,13 @@
 
 <script>
 import { mapState, mapMutations } from "vuex";
+import SearchBar from "./Search";
+
 export default {
   props: {
     source: String
   },
-  components: {},
+  components: { SearchBar },
   data: () => ({
     authDialog: false,
     miniVariant: true,
@@ -149,9 +141,12 @@ export default {
     ]
   }),
   mounted() {
+    //hack because vuetify won't honor props
     this.$vuetify.theme.dark = this.darkTheme;
     const darkEL = document.getElementById("darkTheme");
+    const darkSwitch = document.getElementById("darkSwitch");
     darkEL.classList.remove("theme--dark");
+    darkSwitch.querySelector(":scope > div").classList.remove("theme--dark");
   },
   computed: {
     ...mapState(["darkTheme"]),

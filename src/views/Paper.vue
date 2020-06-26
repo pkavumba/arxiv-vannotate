@@ -6,14 +6,15 @@
       </div>
     </v-col>
     <v-col cols="12" v-if="loading">
-      <h2
-        class="text-center"
-      >Converting the paper {{arxiv_id}} to HTML. This should take less than a minute.</h2>
+      <h2 class="text-center">
+        Converting the paper {{ arxiv_id }} to HTML. This should take less than
+        a minute.
+      </h2>
     </v-col>
 
     <v-col cols="12">
       <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" v-html="paper" style="font-size: 20pt"></v-col>
+        <v-col cols="12" sm="8" v-html="paper" style="font-size: 20pt" id="ltx_page_main_2020"></v-col>
       </v-row>
     </v-col>
     <v-col cols="12" sm="8" class="text-center">
@@ -33,6 +34,8 @@
 <script>
 // @ is an alias to /src
 import axios from "axios";
+import vanityApi from "../mixins/api.js";
+import annotator from "annotator";
 
 export default {
   name: "Home",
@@ -41,56 +44,50 @@ export default {
     titleTemplate: "%s | arXiv-vannotate"
   },
   components: {},
-  mixins: [],
+  mixins: [vanityApi],
   data: () => ({
     paper: "",
     loading: true,
     alert: false,
     alertMessage: "",
-    baseUrl: "https://arxiv-vanity-restful-api.herokuapp.com"
+    app: ""
   }),
   props: { arxiv_id: String },
-  computed: {
-    url() {
-      return `${this.baseUrl}/api/renders/2/render/?arxiv_id=${this.arxiv_id}`;
-    }
-  },
   mounted() {
-    this.fetchPaper();
+    this.fetch();
   },
   watch: {
     arxiv_id: function() {
-      this.fetchPaper();
+      this.fetch();
     }
   },
   methods: {
-    fetchPaper() {
+    fetch() {
       this.loading = true;
-      axios
-        .get(
-          `${this.baseUrl}/api/renders/2/render/?arxiv_id=${this.arxiv_id}`,
-          {
-            headers: {
-              Accept: "*/*"
-            }
-          }
-        )
+      this.renderPaper(this.arxiv_id)
         .then(res => {
-          //console.log(res.data);
           this.alert = false;
           this.loading = false;
           this.paper = res.data.rendered;
           this.addStyle(res.data.styles);
           this.loadjscssfile(res.data.links, "css");
-          //
+          this.initAnnotator();
         })
         .catch(error => {
-          //console.log(error);
+          console.log(error);
+          console.log(JSON.stringify(error));
           this.loading = false;
           this.alertMessage = error;
           this.alert = false;
           this.paper = "Paper not found or cannot be rendered";
         });
+    },
+    initAnnotator() {
+      this.app = new annotator.App();
+      this.app.include(annotator.ui.main, {
+        element: document.getElementById("ltx_page_main_2020")
+      });
+      this.app.start();
     },
     addStyle(styles) {
       /* Create style document */

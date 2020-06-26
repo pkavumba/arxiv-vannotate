@@ -20,3 +20,9 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+.firebase
+.firebaserc
+deploy.sh
+firebase.json
+firebase.js
+logo.svg
