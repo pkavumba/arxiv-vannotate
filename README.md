@@ -1,4 +1,4 @@
-# arXiv-Vannotate
+# [arXiv-Vannotate](https://arxiv-vannotate.web.app)
 
 A PWA that adds annotations and darkmode on the awesome arXiv Vanity that renders PDF papers to HTML
 
