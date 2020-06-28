@@ -41,7 +41,7 @@ import axios from "axios";
 import annotator from "annotator";
 
 import vanityApi from "../mixins/api.js";
-import css from "../assets/index.css";
+//import css from "../assets/index.css";
 //import js from "../assets/index.js";
 
 export default {
@@ -59,7 +59,9 @@ export default {
     alertMessage: "",
     app: "",
     renderStateURL: "",
-    paper: {}
+    paper: {},
+    css: "https://dvzfo78yzcghn.cloudfront.net/static/vanity/index.css",
+    js: "https://dvzfo78yzcghn.cloudfront.net/static/vanity/index.js"
   }),
   props: { arxiv_id: String },
   mounted() {
@@ -113,8 +115,8 @@ export default {
       this.alert = false;
       this.loading = false;
       this.paperHTML = data.rendered;
-      this.addStyle(data.styles);
-      this.loadjscssfile(data.links, "css");
+      this.loadjscssfile(this.css, "css");
+      this.loadjscssfile(this.js, "js");
       this.initAnnotator();
       try {
         this.setPaper(data.paper);
@@ -139,25 +141,23 @@ export default {
       });
       this.app.start();
     },
-    addStyle(styles) {
-      /* Create style document */
-      //document.getElementsByTagName("head")[0].appendChild(styles);
-    },
     loadjscssfile(filename, filetype) {
+      let fileref;
       if (filetype == "js") {
         //if filename is a external JavaScript file
-        let fileref = document.createElement("script");
+        fileref = document.createElement("script");
         fileref.setAttribute("type", "text/javascript");
         fileref.setAttribute("src", filename);
       } else if (filetype == "css") {
         //if filename is an external CSS file
-        let fileref = document.createElement("link");
+        fileref = document.createElement("link");
         fileref.setAttribute("rel", "stylesheet");
         fileref.setAttribute("type", "text/css");
         fileref.setAttribute("href", filename);
       }
-      if (typeof fileref != "undefined")
+      if (typeof fileref != "undefined") {
         document.getElementsByTagName("head")[0].appendChild(fileref);
+      }
     },
     checkState() {
       this.renderState(this.arxiv_id)
