@@ -8,11 +8,23 @@ export default new Vuex.Store({
   plugins: [createPersistedState()],
   state: {
     darkTheme: false,
-    apiKey: ""
+    apiKey: "",
+    paper: "",
+    previousPaper: "",
+    previousId: ""
   },
   mutations: {
     changeDarkMode(state, mode) {
       state.darkTheme = mode;
+    },
+    setPaper(state, payload) {
+      state.paper = payload;
+    },
+    setPreviousPaper(state, payload) {
+      state.previousPaper = payload;
+    },
+    setPreviousId(state, payload) {
+      state.previousId = payload;
     }
   },
   actions: {},

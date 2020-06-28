@@ -2,19 +2,30 @@
   <v-row>
     <v-col cols="12" v-if="loading">
       <div class="text-center">
-        <v-progress-circular :size="70" color="primary" indeterminate></v-progress-circular>
+        <v-progress-circular
+          :size="70"
+          color="primary"
+          indeterminate
+        ></v-progress-circular>
       </div>
     </v-col>
     <v-col cols="12" v-if="loading">
-      <h2 class="text-center">
-        Converting the paper {{ arxiv_id }} to HTML. This should take less than
-        a minute.
-      </h2>
+      <div class="text-center">
+        Converting the paper
+        <span class="text-decoration-underline">"{{ paperTitle }}"</span> to
+        HTML. This should take less than a minute.
+      </div>
     </v-col>
 
     <v-col cols="12">
       <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" v-html="paper" style="font-size: 20pt" id="ltx_page_main_2020"></v-col>
+        <v-col
+          cols="12"
+          sm="8"
+          v-html="paperHTML"
+          style="font-size: 20pt"
+          id="ltx_page_main_2020"
+        ></v-col>
       </v-row>
     </v-col>
     <v-col cols="12" sm="8" class="text-center">
@@ -33,24 +44,30 @@
 
 <script>
 // @ is an alias to /src
+import { mapState, mapMutations } from "vuex";
 import axios from "axios";
-import vanityApi from "../mixins/api.js";
+//var showdown = require("showdown");
+
 import annotator from "annotator";
+
+import vanityApi from "../mixins/api.js";
 
 export default {
   name: "Home",
   metaInfo: {
     title: "Home",
-    titleTemplate: "%s | arXiv-vannotate"
+    titleTemplate: "%s | arXiv-vannotate",
   },
   components: {},
   mixins: [vanityApi],
   data: () => ({
-    paper: "",
+    paperHTML: "",
     loading: true,
     alert: false,
     alertMessage: "",
-    app: ""
+    app: "",
+    renderStateURL: "",
+    paper: {},
   }),
   props: { arxiv_id: String },
   mounted() {
@@ -58,34 +75,75 @@ export default {
   },
   watch: {
     arxiv_id: function() {
+      this.paperHTML = "";
+      this.paper = {};
       this.fetch();
-    }
+    },
+  },
+  computed: {
+    paperTitle() {
+      return this.paper.title ? this.paper.title : this.arxiv_id;
+    },
+    ...mapState(["previousId", "previousPaper"]),
   },
   methods: {
+    ...mapMutations(["setPreviousId", "setPreviousPaper", "setPaper"]),
     fetch() {
       this.loading = true;
-      this.renderPaper(this.arxiv_id)
-        .then(res => {
-          this.alert = false;
-          this.loading = false;
-          this.paper = res.data.rendered;
-          this.addStyle(res.data.styles);
-          this.loadjscssfile(res.data.links, "css");
-          this.initAnnotator();
-        })
-        .catch(error => {
-          console.log(error);
-          console.log(JSON.stringify(error));
-          this.loading = false;
-          this.alertMessage = error;
-          this.alert = false;
-          this.paper = "Paper not found or cannot be rendered";
-        });
+      if (this.arxiv_id == this.previousId) {
+        this.updatePage(this.previousPaper);
+      } else {
+        this.renderPaper(this.arxiv_id)
+          .then((res) => {
+            const render_state = res.data.render_state;
+            if (render_state === "running" || render_state === "unstarted") {
+              this.paper = res.data.paper;
+              this.checkState();
+            } else if (render_state === "success") {
+              this.updatePage(res.data);
+            } else {
+              //console.log(res);
+            }
+          })
+          .catch((error) => {
+            this.loading = false;
+            this.alertMessage = error;
+            this.alert = false;
+            if (error.response) {
+              this.paperHTML = error.response.data.detail;
+            } else {
+              this.paperHTML = error;
+            }
+          });
+      }
+    },
+    updatePage(data) {
+      this.alert = false;
+      this.loading = false;
+      this.paperHTML = data.rendered;
+      this.addStyle(data.styles);
+      this.loadjscssfile(data.links, "css");
+      this.initAnnotator();
+      try {
+        this.setPaper(data.paper);
+        this.setPreviousPaper(data);
+        this.setPreviousId(this.arxiv_id);
+      } catch (error) {
+        //error setting vuex paper might occur due to local storage size
+        //console.log(error);
+      }
     },
     initAnnotator() {
+      //version 2 touch still under development
       this.app = new annotator.App();
       this.app.include(annotator.ui.main, {
-        element: document.getElementById("ltx_page_main_2020")
+        element: document.getElementById("ltx_page_main_2020"),
+        editorExtensions: [annotator.ui.tags.editorExtension],
+        viewerExtensions: [
+          //annotator.ui.markdown.viewerExtension,
+          annotator.ui.tags.viewerExtension,
+          annotator.ui.tags.editorExtension,
+        ],
       });
       this.app.start();
     },
@@ -108,8 +166,29 @@ export default {
       }
       if (typeof fileref != "undefined")
         document.getElementsByTagName("head")[0].appendChild(fileref);
-    }
-  }
+    },
+    checkState() {
+      this.renderState(this.arxiv_id)
+        .then((res) => {
+          if (res.state === "running" || res.state === "unstarted") {
+            this.checkStateTimeout();
+          } else if (res.state === "success") {
+            this.fetch();
+          } else {
+            this.fetch(); //update page with error state
+          }
+        })
+        .catch((error) => {
+          // update page
+          this.fetch();
+        });
+    },
+    checkStateTimeout() {
+      setTimeout(() => {
+        this.checkState();
+      }, 2000);
+    },
+  },
 };
 </script>
 <style>
