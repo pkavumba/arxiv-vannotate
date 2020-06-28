@@ -65,6 +65,7 @@ export default {
   }),
   props: { arxiv_id: String },
   mounted() {
+    this.loadjscssfile(this.css, "css");
     this.fetch();
   },
   watch: {
@@ -115,7 +116,6 @@ export default {
       this.alert = false;
       this.loading = false;
       this.paperHTML = data.rendered;
-      this.loadjscssfile(this.css, "css");
       this.loadjscssfile(this.js, "js");
       this.initAnnotator();
       try {
