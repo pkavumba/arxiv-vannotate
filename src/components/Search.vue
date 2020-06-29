@@ -4,12 +4,12 @@
     ref="search"
     flat
     solo-inverted
-    hide-details
+    :hide-details="hide_error_details"
     v-model="query"
     prepend-inner-icon="mdi-magnify"
     label="Search"
-    placeholder="Search using arXiv id. For example 1907.1169"
-    :rules="[(v) => re.test(v) || 'Item is required']"
+    placeholder="Search using any string or url with arXiv id"
+    :rules="[(v) => re.test(v) || 'arXiv ID is required']"
     :error="error"
     @keyup.enter="convert"
   />
@@ -18,7 +18,10 @@
 <script>
 export default {
   name: "Search",
-  props: { visibility: { type: String, default: "d-none d-sm-flex" } },
+  props: {
+    visibility: { type: String, default: "d-none d-sm-flex" },
+    hide_error_details: { type: Boolean, default: true }
+  },
   data: () => ({
     query: "",
     arxivId: "",
@@ -29,12 +32,12 @@ export default {
     convert() {
       if (this.re.test(this.query)) {
         this.setArxivId();
-        if (this.$route.query.arxiv_id === this.arxivId) {
+        if (this.$route.params.arxiv_id === this.arxivId) {
           //do nothing
         } else {
           this.$router.push({
             name: "Paper",
-            query: { arxiv_id: this.arxivId }
+            params: { arxiv_id: this.arxivId }
           });
         }
       } else {

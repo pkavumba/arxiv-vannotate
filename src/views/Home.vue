@@ -1,19 +1,19 @@
 <template>
   <v-row arign="center" justify="center">
     <v-col cols="12" sm="8">
-      <search-bar :visibility="'x'" ref="search"></search-bar>
+      <search-bar :visibility="'x'" ref="search" :hide_error_details="false"></search-bar>
     </v-col>
     <v-col cols="12" sm="8" class="text-center">
       <v-btn text class="primary" @click="convert">Convert to HTML</v-btn>
     </v-col>
     <v-col cols="12" sm="8" v-if="paper">
       Continue reading
-      <router-link :to="{ name: 'Paper', query: { arxiv_id: paper.arxiv_id } }">"{{ paper.title }}"</router-link>
+      <router-link :to="{ name: 'Paper', params: { arxiv_id: paper.arxiv_id } }">"{{ paper.title }}"</router-link>
     </v-col>
     <v-col cols="12" sm="8" v-else>
       For example
       <router-link
-        :to="{ name: 'Paper', query: { arxiv_id: examples[0].arxiv_id } }"
+        :to="{ name: 'Paper', params: { arxiv_id: examples[0].arxiv_id } }"
       >"{{ examples[0].title }}"</router-link>
     </v-col>
     <v-col cols="12" sm="8" class="diplay3">

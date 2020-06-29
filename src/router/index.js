@@ -11,12 +11,10 @@ const routes = [{
     component: Home
   },
   {
-    path: "/paper",
+    path: "/papers/:arxiv_id",
     name: "Paper",
     component: Paper,
-    props: (route) => ({
-      arxiv_id: route.query.arxiv_id
-    })
+    props: true
   },
   {
     path: "/about",
