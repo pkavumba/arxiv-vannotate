@@ -1,17 +1,7 @@
 <template>
   <v-row arign="center" justify="center">
     <v-col cols="12" sm="8">
-      <v-text-field
-        flat
-        solo-inverted
-        v-model="arxivId"
-        prepend-inner-icon="mdi-magnify"
-        label="arXiv Id"
-        placeholder="Search using arXiv id. For example 1907.1169"
-        :rules="[(v) => !!v || 'arXiv Id is required']"
-        :error="error"
-        @keyup.enter="convert"
-      />
+      <search-bar :visibility="'x'" ref="search"></search-bar>
     </v-col>
     <v-col cols="12" sm="8" class="text-center">
       <v-btn text class="primary" @click="convert">Convert to HTML</v-btn>
@@ -48,10 +38,9 @@ export default {
     title: "Home",
     titleTemplate: "%s | arXiv-Vannotate"
   },
-  components: {},
+  components: { SearchBar },
   mixins: [],
   data: () => ({
-    arxivId: "",
     error: false,
     error_msg: "",
     examples: [
@@ -69,14 +58,7 @@ export default {
   },
   methods: {
     convert() {
-      if (this.arxivId) {
-        this.$router.push({
-          name: "Paper",
-          query: { arxiv_id: this.arxivId }
-        });
-      } else {
-        this.error = true;
-      }
+      this.$refs.search.convert();
     }
   }
 };
