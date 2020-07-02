@@ -6,6 +6,9 @@ import "./registerServiceWorker";
 import vuetify from "./plugins/vuetify";
 import VueMeta from "vue-meta";
 import VueAnalytics from "vue-analytics";
+import {
+  auth
+} from "./firebase";
 
 Vue.config.productionTip = false;
 Vue.use(VueMeta);

@@ -17,6 +17,11 @@ const routes = [{
     props: true
   },
   {
+    path: "/login",
+    name: "Login",
+    component: () => import("../views/Login.vue"),
+  },
+  {
     path: "*",
     name: "404NotFound",
     // route level code-splitting

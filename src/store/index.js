@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import createPersistedState from "vuex-persistedstate";
 
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
@@ -11,7 +12,9 @@ export default new Vuex.Store({
     apiKey: "",
     paper: "",
     previousPaper: "",
-    previousId: ""
+    previousId: "",
+    user: null,
+    uid: null
   },
   mutations: {
     changeDarkMode(state, mode) {
@@ -25,6 +28,9 @@ export default new Vuex.Store({
     },
     setPreviousId(state, payload) {
       state.previousId = payload;
+    },
+    setUID(state, uid) {
+      state.uid = uid;
     }
   },
   actions: {},
