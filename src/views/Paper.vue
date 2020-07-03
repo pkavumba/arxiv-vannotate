@@ -2,7 +2,11 @@
   <v-row>
     <v-col cols="12" v-if="loading">
       <div class="text-center">
-        <v-progress-circular :size="70" color="primary" indeterminate></v-progress-circular>
+        <v-progress-circular
+          :size="70"
+          color="primary"
+          indeterminate
+        ></v-progress-circular>
       </div>
     </v-col>
     <v-col cols="12" v-if="loading">
@@ -14,8 +18,19 @@
     </v-col>
 
     <v-col cols="12">
+      <v-row v-if="!loading" align="center" justify="center">
+        <v-col cols="12" sm="8">
+          <credit-bar v-bind:paper="paper"></credit-bar>
+        </v-col>
+      </v-row>
+      <v-divider></v-divider>
       <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" v-html="paperHTML" id="ltx_page_main_2020"></v-col>
+        <v-col
+          cols="12"
+          sm="8"
+          v-html="paperHTML"
+          id="ltx_page_main_2020"
+        ></v-col>
       </v-row>
     </v-col>
     <v-col cols="12" sm="8" class="text-center">
@@ -36,21 +51,19 @@
 // @ is an alias to /src
 import { mapState, mapMutations } from "vuex";
 import axios from "axios";
-//var showdown = require("showdown");
+import CreditBar from "../components/Credit";
 
 import annotator from "html-annotator";
 
 import vanityApi from "../mixins/api.js";
-//import css from "../assets/index.css";
-//import js from "../assets/index.js";
 
 export default {
   name: "Home",
   metaInfo: {
     title: "Home",
-    titleTemplate: "%s | arXiv-vannotate"
+    titleTemplate: "%s | arXiv-vannotate",
   },
-  components: {},
+  components: { CreditBar },
   mixins: [vanityApi],
   data: () => ({
     paperHTML: "",
@@ -61,7 +74,7 @@ export default {
     renderStateURL: "",
     paper: {},
     css: "https://dvzfo78yzcghn.cloudfront.net/static/vanity/index.css",
-    js: "https://dvzfo78yzcghn.cloudfront.net/static/vanity/index.js"
+    js: "https://dvzfo78yzcghn.cloudfront.net/static/vanity/index.js",
   }),
   props: { arxiv_id: String },
   mounted() {
@@ -73,13 +86,14 @@ export default {
       this.paperHTML = "";
       this.paper = {};
       this.fetch();
-    }
+    },
   },
   computed: {
     paperTitle() {
       return this.paper.title ? this.paper.title : this.arxiv_id;
     },
-    ...mapState(["previousId", "previousPaper"])
+    ...mapState(["previousId", "previousPaper"]),
+    ...mapState({ cachePaper: "paper" }),
   },
   methods: {
     ...mapMutations(["setPreviousId", "setPreviousPaper", "setPaper", "uid"]),
@@ -87,9 +101,10 @@ export default {
       this.loading = true;
       if (this.arxiv_id == this.previousId) {
         this.updatePage(this.previousPaper);
+        this.paper = this.cachePaper;
       } else {
         this.renderPaper(this.arxiv_id)
-          .then(res => {
+          .then((res) => {
             const render_state = res.data.render_state;
             if (render_state === "running" || render_state === "unstarted") {
               this.paper = res.data.paper;
@@ -100,7 +115,7 @@ export default {
               //console.log(res);
             }
           })
-          .catch(error => {
+          .catch((error) => {
             this.loading = false;
             this.alertMessage = error;
             this.alert = false;
@@ -134,7 +149,7 @@ export default {
       const app = new annotator.App()
         .include(annotator.ui.main, {
           element: elem,
-          editorExtensions: [annotator.ui.colorPicker.editorExtension]
+          editorExtensions: [annotator.ui.colorPicker.editorExtension],
         })
         .include(annotator.ui.filter.standalone)
         .include(annotator.storage.localStore);
@@ -144,7 +159,7 @@ export default {
       //  });
       app.start().then(() => {
         app.annotations.load({
-          uri: window.location.href
+          uri: window.location.href,
         });
       });
       this.app = app;
@@ -169,7 +184,7 @@ export default {
     },
     checkState() {
       this.renderState(this.arxiv_id)
-        .then(res => {
+        .then((res) => {
           if (res.state === "running" || res.state === "unstarted") {
             this.checkStateTimeout();
           } else if (res.state === "success") {
@@ -178,7 +193,7 @@ export default {
             this.fetch(); //update page with error state
           }
         })
-        .catch(error => {
+        .catch((error) => {
           // update page
           this.fetch();
         });
@@ -187,8 +202,8 @@ export default {
       setTimeout(() => {
         this.checkState();
       }, 2000);
-    }
-  }
+    },
+  },
 };
 </script>
 <style>
